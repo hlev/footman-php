@@ -1,7 +1,7 @@
 {
 	"name": "hlev/footman",
 	"type": "library",
-	"description": "Simple TCP socket based IPC",
+	"description": "PHP library to issue commands to bootboy",
 	"homepage": "https://github.com/hlev/footman-php",
 	"license": "MIT",
 	"authors": [
