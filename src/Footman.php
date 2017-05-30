@@ -47,9 +47,10 @@ class Footman {
 				break;
 			}
 		}
-		
+
 		while (($retVal = socket_recv($socket, $data, 1024 * 8, MSG_WAITALL)) !== false) {
-			if (is_null($retVal)) {
+
+			if (is_null($data)) {
 				break;
 			}
 
