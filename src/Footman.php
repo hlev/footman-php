@@ -21,8 +21,14 @@ class Footman {
 		$this->servicePort = $servicePort;
 	}
 
-	public function send($command) {
-		$socket   = $this->createSocket();
+	/**
+	 * @param string $command The command
+	 * @param int $rcvTimeout (optional) Response timeout in seconds, default: unlimited
+	 * @return string The response
+	 * @throws Exception
+	 */
+	public function send($command, $rcvTimeout = null) {
+		$socket   = $this->createSocket($rcvTimeout);
 		$conn     = socket_connect($socket, $this->host, $this->servicePort);
 		$length   = strlen($command);
 		$sent     = 0;
@@ -66,12 +72,23 @@ class Footman {
 		return $response;
 	}
 
-	private function createSocket() {
-		$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+	/**
+	 * @param int $rcvTimeout
+	 * @return resource
+	 * @throws Exception
+	 */
+	private function createSocket($rcvTimeout = null) {
+		$socket  = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+		$rcvTimeout = [
+			'sec'  => is_null($rcvTimeout) ? 0 : (int)$rcvTimeout,
+			'usec' => 0
+		];
 
 		if (!$socket) {
 			throw new Exception(sprintf('Unable to create socket: %s', $this->getLastErrorStr($socket)));
 		}
+
+		socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, $rcvTimeout);
 
 		if (!socket_bind($socket, $this->host)) {
 			throw new Exception(sprintf('Unable to bind socket: %s', $this->getLastErrorStr($socket)));
@@ -81,6 +98,10 @@ class Footman {
 	}
 
 
+	/**
+	 * @param resource $s
+	 * @return string
+	 */
 	private function getLastErrorStr($s) {
 		$err = socket_strerror(socket_last_error($s));
 		socket_clear_error($s);
